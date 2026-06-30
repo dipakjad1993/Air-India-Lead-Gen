@@ -6,26 +6,29 @@ import requests
 
 app = Flask(__name__)
 
-# Secure storage string
+# Fallback extraction 
 APOLLO_API_KEY = os.environ.get("APOLLO_API_KEY", "PASTE_YOUR_REAL_APOLLO_KEY_HERE")
 
 class AirIndiaLiveLeadGen:
     def __init__(self, api_key):
-        self.api_key = api_key
-        self.api_url = "https://api.apollo.io/api/v1/mixed_people/api_search"
-        # COMPLIANCE FIX: Injecting the key securely into x-api-key header block instead of payload parameters
+        self.api_key = api_key.strip()
+        # Enforcing standard unified routing endpoint path
+        self.api_url = "https://api.apollo.io/api/v1/mixed_people/search"
+        
+        # Hardening headers with dual-authentication protocol matrix
         self.headers = {
             "Cache-Control": "no-cache",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "x-api-key": self.api_key
+            "x-api-key": self.api_key,
+            "Authorization": f"Bearer {self.api_key}"
         }
         self.leads_data = []
 
     def fetch_100_live_startup_leads(self):
-        print(f"[!] Accessing secure header channel to Apollo...")
+        print(f"[!] Dispatching authenticated validation arrays to Apollo...")
         
-        # Payload now ONLY holds filtering data parameters—clean and secure
+        # Clean request formatting 
         payload = {
             "person_titles": [
                 "VP of Business Development", 
@@ -42,19 +45,21 @@ class AirIndiaLiveLeadGen:
 
         try:
             response = requests.post(self.api_url, json=payload, headers=self.headers, timeout=20)
-            print(f"[#] Secure Endpoint status: {response.status_code}")
+            print(f"[#] Core Network Feedback Status: {response.status_code}")
             
             if response.status_code != 200:
-                print(f"[-] Apollo Error Payload: {response.text}")
+                print(f"[-] Raw Backend Feedback: {response.text}")
                 return []
             
             api_data = response.json()
-            people_found = api_data.get("people", [])
-            print(f"[+] Loaded {len(people_found)} data records natively via header verification.")
+            
+            # Apollo sometimes switches output keys between 'people' and 'contacts' depending on token scopes
+            people_found = api_data.get("people") or api_data.get("contacts") or []
+            print(f"[+] Extraction stream detected: {len(people_found)} records located.")
 
             for person in people_found:
                 name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
-                if not name or name.endswith('***'):
+                if not name or name.endswith('***') or name == "None None":
                     name = f"Executive Profile ({person.get('title', 'Growth Lead')})"
                     
                 role = person.get("title", "Growth Lead")
@@ -66,21 +71,21 @@ class AirIndiaLiveLeadGen:
                 phone = person.get("sanitized_phone", "Central Corporate Exchange Only")
                 
                 why_selected = (
-                    f"Selected because {name} handles revenue tracking models at {company_name} ({company_scale}). "
-                    f"Their regional sales footprint directly aligns with Air India's international nonstop network matrix."
+                    f"Selected because {name} drives out country client pipelines over at {company_name} ({company_scale}). "
+                    f"Their regional sales footprint directly maps onto Air India's nonstop long-haul routes."
                 )
                 
                 custom_outreach_msg = (
-                    f"Subject: Optimization pathways for {company_name}'s global sales flight overhead\n\n"
+                    f"Subject: Direct travel optimization maps for {company_name}'s outbound reps\n\n"
                     f"Hi {person.get('first_name', 'Team')},\n\n"
-                    f"I noticed you are managing global partnership expansion workflows over at {company_name}.\n\n"
-                    f"When sales teams travel across regions to secure client renewals, connection layovers represent dead downtime. "
-                    f"At Air India, we've structured our nonstop route grid—connecting major hubs directly to primary business sectors—to optimize pipeline efficiency. "
-                    f"We can initialize an 'eZ Booking' business infrastructure account for your team—granting up to 15% pricing optimizations, centralized billing formats, and real-time bag mapping via AEYE Vision.\n\n"
-                    f"Are you open to a brief 5-minute sync next week to review custom corporate tier templates for your sales reps?\n\n"
+                    f"I noticed you are leading global growth and client acquisition initiatives at {company_name}.\n\n"
+                    f"When expanding target territory accounts across continents, connecting layovers eat into actual selling time. "
+                    f"At Air India, we've developed an optimized nonstop flight grid connecting global business sectors directly to bypass connector terminal overhead entirely. "
+                    f"We can open up a custom 'eZ Booking' business corporate portal for your company infrastructure—locking in 15% booking optimization, simple master invoice frameworks, and absolute real-time bag sync tracking using AEYE Vision.\n\n"
+                    f"Are you open to a brief 5-minute exploratory call next Tuesday to audit custom route templates for your reps?\n\n"
                     f"Best regards,\n"
                     f"[Your Name]\n"
-                    f"Corporate Accounts Specialist | Air India"
+                    f"Corporate Accounts Team | Air India"
                 )
 
                 self.leads_data.append({
@@ -95,7 +100,7 @@ class AirIndiaLiveLeadGen:
                 })
                 
         except Exception as e:
-            print(f"[-] Secure connection runtime failure: {e}")
+            print(f"[-] Data transmission layer error: {e}")
             
         return self.leads_data
 
@@ -114,7 +119,7 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <h1 style="color: #d11226;">Air India Executive Pipeline</h1>
-        <p>Live endpoint interface pipeline matching 100+ growth-focused startups to our flight network.</p>
+        <p>Production endpoint interface pipeline syncing 100+ growth-focused startups directly to our flight network blocks.</p>
         <form action="/download" method="GET">
             <button type="submit">Generate & Download 100+ Live Leads</button>
         </form>
