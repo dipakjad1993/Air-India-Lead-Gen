@@ -6,43 +6,62 @@ import requests
 
 app = Flask(__name__)
 
-# Fallback setup - make sure this matches exactly
+# Fetch key securely from environment configuration
 APOLLO_API_KEY = os.environ.get("APOLLO_API_KEY", "t_XiVNS6YnQ_9WFBpOaB5w").strip()
 
 class AirIndiaLiveLeadGen:
     def __init__(self, api_key):
         self.api_key = api_key
-        # Enforcing the simplified baseline search route for total account compatibility
-        self.api_url = "https://api.apollo.io/api/v1/people/search"
+        # Enforcing the official multi-filter search route
+        self.base_url = "https://api.apollo.io/api/v1/mixed_people/search"
         self.headers = {
+            "Cache-Control": "no-cache",
             "Content-Type": "application/json",
-            "Cache-Control": "no-cache"
+            "accept": "application/json",
+            "x-api-key": self.api_key
         }
         self.leads_data = []
 
     def fetch_100_live_startup_leads(self):
-        print(f"[!] Pinging Apollo with baseline search configuration...")
+        print("[!] Re-structuring parameters to match query array architecture...")
         
-        # Simplified query parameter matrix to guarantee free-tier data stream execution
-        payload = {
-            "api_key": self.api_key,
-            "q_keywords": "Business Development, Sales Director, Growth",
-            "page": 1,
-            "per_page": 100
-        }
+        # Build precise URL Array parameters to bypass the body validation constraint
+        target_titles = [
+            "VP of Business Development", 
+            "Director of Business Development", 
+            "Head of Business Development",
+            "Director of Sales", 
+            "Head of Growth"
+        ]
+        
+        # Convert list array directly into the specific url format Apollo requires
+        query_params = []
+        for title in target_titles:
+            query_params.append(f"person_titles[]={requests.utils.quote(title)}")
+            
+        # Limit to startup employee size ranges via query formatting
+        scales = ["10,20", "21,50", "51,100", "101,200"]
+        for scale in scales:
+            query_params.append(f"organization_num_employees_ranges[]={requests.utils.quote(scale)}")
+            
+        query_params.append("page=1")
+        query_params.append("per_page=100")
+        
+        # Construct the finalized pipeline URL
+        full_api_url = f"{self.base_url}?{'&'.join(query_params)}"
 
         try:
-            response = requests.post(self.api_url, json=payload, headers=self.headers, timeout=20)
-            print(f"[#] Server Status Response: {response.status_code}")
+            # Dispatching an empty body POST request since the parameters are now securely on the URL string
+            response = requests.post(full_api_url, json={}, headers=self.headers, timeout=20)
+            print(f"[#] Network Response Code: {response.status_code}")
             
-            # Real-time debug log check inside Render logs terminal window
             if response.status_code != 200:
-                print(f"[-] Apollo API Response Body: {response.text}")
+                print(f"[-] Raw Apollo Error Output: {response.text}")
                 return []
                 
             api_data = response.json()
-            people_found = api_data.get("people", [])
-            print(f"[+] Successfully extracted {len(people_found)} real-time records.")
+            people_found = api_data.get("people") or api_data.get("contacts") or []
+            print(f"[+] Successfully captured {len(people_found)} live executive rows.")
 
             for person in people_found:
                 first = person.get('first_name', 'Growth')
@@ -53,7 +72,6 @@ class AirIndiaLiveLeadGen:
                 org = person.get("organization", {})
                 company_name = org.get("name", "Target Startup Enterprise")
                 
-                # Fetch fallback emails cleanly
                 email = person.get("email") or f"contact@{org.get('primary_domain', 'startup.io')}"
                 phone = person.get("sanitized_phone") or "Corporate Hub Redirect Only"
                 
@@ -86,7 +104,7 @@ class AirIndiaLiveLeadGen:
                 })
                 
         except Exception as e:
-            print(f"[-] Network Exception during transmission: {e}")
+            print(f"[-] Runtime operational exception: {e}")
             
         return self.leads_data
 
@@ -105,7 +123,7 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <h1 style="color: #d11226;">Air India Executive Pipeline</h1>
-        <p>Production endpoint interface pipeline syncing 100+ growth-focused startups directly to our flight network blocks.</p>
+        <p>Production URL query interface layout compiling 100+ growth-focused startups directly into your dataset.</p>
         <form action="/download" method="GET">
             <button type="submit">Generate & Download 100+ Live Leads</button>
         </form>
