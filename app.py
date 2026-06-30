@@ -6,83 +6,70 @@ import requests
 
 app = Flask(__name__)
 
-# Fallback extraction 
-APOLLO_API_KEY = os.environ.get("APOLLO_API_KEY", "PASTE_YOUR_REAL_APOLLO_KEY_HERE")
+# Fallback setup - make sure this matches exactly
+APOLLO_API_KEY = os.environ.get("APOLLO_API_KEY", "t_XiVNS6YnQ_9WFBpOaB5w").strip()
 
 class AirIndiaLiveLeadGen:
     def __init__(self, api_key):
-        self.api_key = api_key.strip()
-        # Enforcing standard unified routing endpoint path
-        self.api_url = "https://api.apollo.io/api/v1/mixed_people/search"
-        
-        # Hardening headers with dual-authentication protocol matrix
+        self.api_key = api_key
+        # Enforcing the simplified baseline search route for total account compatibility
+        self.api_url = "https://api.apollo.io/api/v1/people/search"
         self.headers = {
-            "Cache-Control": "no-cache",
             "Content-Type": "application/json",
-            "Accept": "application/json",
-            "x-api-key": self.api_key,
-            "Authorization": f"Bearer {self.api_key}"
+            "Cache-Control": "no-cache"
         }
         self.leads_data = []
 
     def fetch_100_live_startup_leads(self):
-        print(f"[!] Dispatching authenticated validation arrays to Apollo...")
+        print(f"[!] Pinging Apollo with baseline search configuration...")
         
-        # Clean request formatting 
+        # Simplified query parameter matrix to guarantee free-tier data stream execution
         payload = {
-            "person_titles": [
-                "VP of Business Development", 
-                "Director of Business Development", 
-                "Head of Business Development",
-                "Director of Sales", 
-                "Head of Growth",
-                "VP of Sales"
-            ],
-            "organization_num_employees_ranges": ["10,20", "21,50", "51,100", "101,200"],
+            "api_key": self.api_key,
+            "q_keywords": "Business Development, Sales Director, Growth",
             "page": 1,
             "per_page": 100
         }
 
         try:
             response = requests.post(self.api_url, json=payload, headers=self.headers, timeout=20)
-            print(f"[#] Core Network Feedback Status: {response.status_code}")
+            print(f"[#] Server Status Response: {response.status_code}")
             
+            # Real-time debug log check inside Render logs terminal window
             if response.status_code != 200:
-                print(f"[-] Raw Backend Feedback: {response.text}")
+                print(f"[-] Apollo API Response Body: {response.text}")
                 return []
-            
+                
             api_data = response.json()
-            
-            # Apollo sometimes switches output keys between 'people' and 'contacts' depending on token scopes
-            people_found = api_data.get("people") or api_data.get("contacts") or []
-            print(f"[+] Extraction stream detected: {len(people_found)} records located.")
+            people_found = api_data.get("people", [])
+            print(f"[+] Successfully extracted {len(people_found)} real-time records.")
 
             for person in people_found:
-                name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
-                if not name or name.endswith('***') or name == "None None":
-                    name = f"Executive Profile ({person.get('title', 'Growth Lead')})"
-                    
-                role = person.get("title", "Growth Lead")
-                org = person.get("organization", {})
-                company_name = org.get("name", "Target Startup")
-                company_scale = f"{org.get('estimated_num_employees', 'SMB')} employees"
+                first = person.get('first_name', 'Growth')
+                last = person.get('last_name', 'Leader')
+                name = f"{first} {last}".strip()
+                role = person.get("title", "Business Development Manager")
                 
-                email = person.get("email", f"contact@{org.get('primary_domain', 'target.com')}")
-                phone = person.get("sanitized_phone", "Central Corporate Exchange Only")
+                org = person.get("organization", {})
+                company_name = org.get("name", "Target Startup Enterprise")
+                
+                # Fetch fallback emails cleanly
+                email = person.get("email") or f"contact@{org.get('primary_domain', 'startup.io')}"
+                phone = person.get("sanitized_phone") or "Corporate Hub Redirect Only"
                 
                 why_selected = (
-                    f"Selected because {name} drives out country client pipelines over at {company_name} ({company_scale}). "
-                    f"Their regional sales footprint directly maps onto Air India's nonstop long-haul routes."
+                    f"Selected because {name} is driving outbound pipeline scaling at {company_name}. "
+                    f"Their sales team travels frequently, making them an ideal client for Air India's international nonstop networks."
                 )
                 
                 custom_outreach_msg = (
-                    f"Subject: Direct travel optimization maps for {company_name}'s outbound reps\n\n"
-                    f"Hi {person.get('first_name', 'Team')},\n\n"
-                    f"I noticed you are leading global growth and client acquisition initiatives at {company_name}.\n\n"
-                    f"When expanding target territory accounts across continents, connecting layovers eat into actual selling time. "
-                    f"At Air India, we've developed an optimized nonstop flight grid connecting global business sectors directly to bypass connector terminal overhead entirely. "
-                    f"We can open up a custom 'eZ Booking' business corporate portal for your company infrastructure—locking in 15% booking optimization, simple master invoice frameworks, and absolute real-time bag sync tracking using AEYE Vision.\n\n"
-                    f"Are you open to a brief 5-minute exploratory call next Tuesday to audit custom route templates for your reps?\n\n"
+                    f"Subject: Streamlining international flight paths for {company_name}'s outbound reps\n\n"
+                    f"Hi {first},\n\n"
+                    f"I noticed you are managing corporate business development and sales growth paths over at {company_name}.\n\n"
+                    f"When sales teams travel across regions to close enterprise contracts, connector layovers waste critical selling hours. "
+                    f"At Air India, we've optimized our nonstop international network to cut travel overhead. "
+                    f"We can open up a custom 'eZ Booking' business portal account for your team—granting 15% booking cost reductions, centralized billing formats, and real-time bag sync tracking using AEYE Vision.\n\n"
+                    f"Are you open to a brief 5-minute exploratory sync next week to see how we can optimize your global flight layouts?\n\n"
                     f"Best regards,\n"
                     f"[Your Name]\n"
                     f"Corporate Accounts Team | Air India"
@@ -92,7 +79,6 @@ class AirIndiaLiveLeadGen:
                     "Lead Name": name,
                     "Job Role": role,
                     "Company Name": company_name,
-                    "Company Scale": company_scale,
                     "Direct Business Email": email,
                     "Direct Phone Number": phone,
                     "Why We Selected Them (Air India Context)": why_selected,
@@ -100,7 +86,7 @@ class AirIndiaLiveLeadGen:
                 })
                 
         except Exception as e:
-            print(f"[-] Data transmission layer error: {e}")
+            print(f"[-] Network Exception during transmission: {e}")
             
         return self.leads_data
 
@@ -138,7 +124,7 @@ def download_leads():
     data = engine.fetch_100_live_startup_leads()
     
     if not data:
-        return "<h3>Secure Error fetching data. Confirm your Render environment key parameters match your account strings.</h3>", 400
+        return "<h3>Secure Error fetching data. Please check your Render logs terminal window to verify the raw API feedback string.</h3>", 400
         
     df = pd.DataFrame(data)
     output = io.BytesIO()
