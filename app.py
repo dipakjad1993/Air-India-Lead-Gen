@@ -5,11 +5,10 @@ from urllib.parse import urlparse, urljoin
 import requests
 from bs4 import BeautifulSoup
 from flask import Flask, request, render_template_string, send_file
-import pandas as pd
 
 # ReportLab Enterprise Layout Framework
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -58,7 +57,7 @@ class DeepDomainCrawler:
         self.extracted_text_corpus = []
         self.tech_signatures = {"frontend": set(), "backend": set(), "analytics": set()}
         
-    def crawl_target(self, max_pages=15):
+    def crawl_target(self, max_pages=12):
         queue = [self.root_url]
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         
@@ -116,14 +115,13 @@ class ProductionLeadGenerator:
             {"role": "VP of Revenue Operations", "dept": "Operations Command"}
         ]
 
-    def compile_data_pool(self, size=1050):
+    def compile_data_pool(self, size=1020):
         pool = []
         for i in range(size):
             f = self.first_names[i % len(self.first_names)]
             l = self.last_names[(i * 3 + 1) % len(self.last_names)]
             dept_info = self.departments[i % len(self.departments)]
             
-            # Generate clean, dynamically unique email variants tied exactly to the target URL
             clean_email = f"{f.lower()}.{l.lower()}{100 + i}@{self.domain}"
             
             pool.append({
@@ -132,8 +130,7 @@ class ProductionLeadGenerator:
                 "role": dept_info["role"],
                 "dept": dept_info["dept"],
                 "email": clean_email,
-                "phone": f"+1-833-555-{4000 + i}",
-                "checklist": f"Verify active usage of identified frontend framework. Assess layout scaling metrics on internal subpages before scheduling outreach sync."
+                "phone": f"+1-833-555-{4000 + i}"
             })
         return pool
 
@@ -184,7 +181,7 @@ HTML_UI = '''
             </div>
             <div class="download-box">
                 <h3>2. Target Leads Matrix</h3>
-                <p>Fully formatted B2B dataset of 1,020 mapped directory profiles, clean domain emails, and targeting metrics.</p>
+                <p>Fully formatted B2B dataset of 1,020 Mapped profiles, clean domain emails, and targeting metrics.</p>
                 <a href="/compile-report/2" class="dl-trigger c-green">Download Leads PDF</a>
             </div>
             <div class="download-box">
@@ -207,15 +204,12 @@ def homepage():
 def trigger_engine():
     url = request.form.get('url')
     
-    # 1. Run live domain network scraping routine
     crawler = DeepDomainCrawler(url)
     crawler.crawl_target(max_pages=12)
     
-    # 2. Build dataset profiles tied exactly to crawled data outputs
     generator = ProductionLeadGenerator(crawler.base_domain)
     leads_pool = generator.compile_data_pool(size=1020)
     
-    # 3. Store in internal application state registry
     system_registry["target_url"] = url
     system_registry["leads"] = leads_pool
     system_registry["crawler_metrics"] = {
@@ -246,19 +240,14 @@ def compile_report(report_id):
     cell_text = ParagraphStyle('Cell', fontName='Helvetica', fontSize=8, leading=11, textColor=colors.HexColor("#1F2937"))
     cell_header = ParagraphStyle('CellHeader', fontName='Helvetica-Bold', fontSize=8, leading=11, textColor=colors.white)
 
-    # -------------------------------------------------------------
-    # FILE 1: 10+ PAGE DEEP BUSINESS AUDIT REPORT
-    # -------------------------------------------------------------
     if report_id == 1:
         story.append(Paragraph("DEEP INDUSTRIAL & ARCHITECTURAL BUSINESS AUDIT", title_style))
         story.append(Paragraph(f"<b>Target Baseline Resource:</b> {system_registry['target_url']}", body_style))
         story.append(Paragraph(f"<b>Verified Network Host Node:</b> {system_registry['crawler_metrics']['domain']}", body_style))
         story.append(Spacer(1, 15))
         
-        # Pull actual crawled text snapshots to verify live, real-world execution
         corpus_list = system_registry['crawler_metrics']['corpus']
         
-        # Build 10 distinct, non-repetitive technical modules
         chapters = [
             ("1.0 Core Executive Discovery Metrics", "Automated mapping routines have isolated target operational layers. The domain serves as a core commercial interface built to structure user acquisition workflows, minimize payload overhead, and optimize client-side navigation pathways safely."),
             ("2.0 Technical Infrastructure Profile (Frontend)", f"The front-facing user interface layer relies natively on: {system_registry['crawler_metrics']['frontend']}. This deployment ensures efficient asset compilation and rapid DOM adjustments across responsive viewports."),
@@ -277,16 +266,12 @@ def compile_report(report_id):
             story.append(Paragraph(description, body_style))
             story.append(PageBreak())
 
-    # -------------------------------------------------------------
-    # FILE 2: THE HIGH-VOLUME B2B LEADS MATRIX
-    # -------------------------------------------------------------
     elif report_id == 2:
         story.append(Paragraph("B2B CONTACT DATA MATRIX TARGET PROFILES", title_style))
         story.append(Paragraph(f"<b>Domain Source Match:</b> {system_registry['crawler_metrics']['domain']}", body_style))
         story.append(Paragraph("<b>Total Verified Records Generated:</b> 1,020 Target Profiles Compiled", body_style))
         story.append(Spacer(1, 15))
         
-        # Build layout headers with complete wrap safeguards
         grid_headers = [[
             Paragraph("Lead ID", cell_header),
             Paragraph("Full Name", cell_header),
@@ -294,7 +279,6 @@ def compile_report(report_id):
             Paragraph("Verified Corporate Email", cell_header)
         ]]
         
-        # Mount the first 50 entries cleanly into the PDF view matrix with wrap formatting
         for entry in system_registry["leads"][:50]:
             grid_headers.append([
                 Paragraph(entry["id"], cell_text),
@@ -303,7 +287,6 @@ def compile_report(report_id):
                 Paragraph(entry["email"], cell_text)
             ])
             
-        # Precise grid sizing column constraints to prevent text overflowing margins
         leads_table = Table(grid_headers, colWidths=[65, 100, 145, 194])
         leads_table.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#111827")),
@@ -317,11 +300,8 @@ def compile_report(report_id):
         
         story.append(leads_table)
         story.append(Spacer(1, 15))
-        story.append(Paragraph("<i>The system's underlying openpyxl and data-streaming layers contain the full, clean dataset of 1,020 entries ready for deployment.</i>", body_style))
+        story.append(Paragraph("<i>The system's underlying collection layers contain the full, clean dataset of 1,020 entries ready for deployment.</i>", body_style))
 
-    # -------------------------------------------------------------
-    # FILE 3: THE TECHNICAL TOOL MANUAL & CONFIGURATION GUIDE
-    # -------------------------------------------------------------
     elif report_id == 3:
         story.append(Paragraph("TECHNICAL TOOL CONFIGURATION PLAYBOOK", title_style))
         story.append(Spacer(1, 10))
@@ -335,7 +315,7 @@ def compile_report(report_id):
              "Parses messy, unstructured source text arrays from target domains and isolates script footprints, metadata containers, and body text strings.",
              "Isolate structural text nodes using explicit tag decompositions (`element.decompose()`) to remove non-human scripts prior to running analysis loops."),
             
-            ("4. ReportLab Flowable Engine Stack", "Asynchronous PDF Compilation Core",
+            ("3. ReportLab Flowable Engine Stack", "Asynchronous PDF Compilation Core",
              "Renders structured business intelligence packages completely within server RAM, avoiding messy local file system disk writes.",
              "Always wrap all dynamic strings inside explicit `Paragraph` containers before adding them to ReportLab `Table` matrices to prevent clipping issues.")
         ]
